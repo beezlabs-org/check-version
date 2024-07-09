@@ -33,7 +33,7 @@ runs:
       run: |
         echo "HELM_VERSION_FILE=$(cat ./charts/VERSION)" >> $GITHUB_ENV
 
-        echo "CHART_FILE"=$(sed -e 's/^"//' -e 's/"$//' <<< $(yq .version ./charts/Chart.yaml)) >> $GITHUB_ENV
+        echo "CHART_FILE=$(yq .version ./charts/Chart.yaml)" >> $GITHUB_ENV
 
         [[ "$HELM_VERSION_FILE" == "$CHART_FILE" ]]
       working-directory: ${{ inputs.working-dir }}

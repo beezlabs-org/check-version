@@ -28,26 +28,36 @@ runs:
       working-directory: ${{ inputs.working-dir }}
       shell: bash
 
-    - name: Check if the helm version needs to be checked and get the version
+    - name: Generate environment variables for Helm
       if: "${{ inputs.helm == 'true' }}"
       run: |
         echo "HELM_VERSION_FILE=$(cat ./charts/VERSION)" >> $GITHUB_ENV
 
         echo "CHART_FILE=$(yq .version ./charts/Chart.yaml)" >> $GITHUB_ENV
+      working-directory: ${{ inputs.working-dir }}
+      shell: bash
 
+    - name: Check versions in Chart.yaml
+      if: ${{ inputs.helm == 'true' }}
+      run: |
         [[ "$HELM_VERSION_FILE" == "$CHART_FILE" ]]
       working-directory: ${{ inputs.working-dir }}
       shell: bash
 
-    - name: Check versions in package.json and package-lock.json
-      if: ${{ inputs.node == 'true' }}
+    - name: Generate environment variables for Node
+      if: "${{ inputs.node == 'true' }}"
       run: |
         echo "PACKAGE_FILE=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq .version package.json))" >> $GITHUB_ENV
         if [ -f "./package-lock.json" ]; then
           echo "PACKAGE_LOCK_FILE=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq .version package-lock.json))" >> $GITHUB_ENV
           echo "PACKAGE_LOCK_FILE_PACKAGES=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq ".packages.\"\".version" package-lock.json))" >> $GITHUB_ENV
         fi
+      working-directory: ${{ inputs.working-dir }}
+      shell: bash
 
+    - name: Check versions in package.json and package-lock.json
+      if: ${{ inputs.node == 'true' }}
+      run: |
         if [ -f "./package-lock.json" ]; then
           [[ "$APP_VERSION_FILE" == "$PACKAGE_FILE" && "$PACKAGE_FILE" == "$PACKAGE_LOCK_FILE" && "$PACKAGE_LOCK_FILE" == "$PACKAGE_LOCK_FILE_PACKAGES" ]]
         else
@@ -56,11 +66,16 @@ runs:
       working-directory: ${{ inputs.working-dir }}
       shell: bash
 
-    - name: Check versions in AssemblyInfo.cs
-      if: ${{ inputs.dotnet == 'true' }}
+    - name: Generate environment variables for Dot Net
+      if: "${{ inputs.dotnet == 'true' }}"
       run: |
         echo "ASSEMBLY_VERSION=$(find . -name "AssemblyInfo.cs" -exec cat {} + | grep -oP '(?<=^\[assembly: AssemblyVersion\(")[^"]*')" >> $GITHUB_ENV
         echo "ASSEMBLY_FILE_VERSION=$(find . -name "AssemblyInfo.cs" -exec cat {} + | grep -oP '(?<=^\[assembly: AssemblyFileVersion\(")[^"]*')" >> $GITHUB_ENV
+      working-directory: ${{ inputs.working-dir }}
+      shell: bash
 
+    - name: Check versions in AssemblyInfo.cs
+      if: ${{ inputs.dotnet == 'true' }}
+      run: |
         [[ "$APP_VERSION_FILE" == "$ASSEMBLY_VERSION" && "$ASSEMBLY_VERSION" == "$ASSEMBLY_FILE_VERSION" ]]
       shell: bash

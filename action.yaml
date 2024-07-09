@@ -45,7 +45,7 @@ runs:
         echo "PACKAGE_FILE=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq .version package.json))" >> $GITHUB_ENV
         if [ -f "./package-lock.json" ]; then
           echo "PACKAGE_LOCK_FILE=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq .version package-lock.json))" >> $GITHUB_ENV
-          echo "PACKAGE_LOCK_FILE_PACKAGES=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq '.packages.\"\".version' .\package-lock.json))" >> $GITHUB_ENV
+          echo "PACKAGE_LOCK_FILE_PACKAGES=$(sed -e 's/^"//' -e 's/"$//' <<< $(jq ".packages.\"\".version" package-lock.json))" >> $GITHUB_ENV
         fi
 
         if [ -f "./package-lock.json" ]; then
